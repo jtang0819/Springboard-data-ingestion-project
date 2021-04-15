@@ -1,7 +1,7 @@
 import json
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType,IntegerType,TimestampType,DecimalType,StringType,DateType,StructField
-
+import config
 
 common_event = StructType([
     StructField("col1_val", DateType()),
@@ -44,7 +44,7 @@ def parse_json(line:str):
         return common_event(,, , ....,, , , , "B", line)
 
 spark = SparkSession.builder.master('local').appName('app').getOrCreate()
-spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", "Jr02WEmRh7kNBzrNzzyyYbZYWPEdPCP883k/bAvQvagHtK1tgCqv8czhMDTT4ATwFPSo+tJiu2TVoRql5XJH8A==")
+spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", config.access_token)
 raw = spark.textFile("wasbs://blob-container@springboardstoragejt.blob.core.windows.net/data")
 parsed = raw.map(lambda line: parse_json(line))
 data = spark.createDataFrame(parsed)

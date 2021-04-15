@@ -1,6 +1,8 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType,IntegerType,TimestampType,DecimalType,StringType,DateType,StructField
 from typing import List
+import config
+
 
 common_event = StructType([
     StructField("col1_val", DateType()),
@@ -39,7 +41,7 @@ def parse_csv(line:str):
 
 
 spark = SparkSession.builder.master('local').appName('app').getOrCreate()
-spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", "Jr02WEmRh7kNBzrNzzyyYbZYWPEdPCP883k/bAvQvagHtK1tgCqv8czhMDTT4ATwFPSo+tJiu2TVoRql5XJH8A==")
+spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", config.access_token)
 raw = spark.textFile("wasbs://blob-container@springboardstoragejt.blob.core.windows.net/data/csv/2020-08-05/NYSE/part-00000-5e4ced0a-66e2-442a-b020-347d0df4df8f-c000.txt")
 parsed = raw.map(lambda line: parse_csv(line))
 data = spark.createDataFrame(parsed)
