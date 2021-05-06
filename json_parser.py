@@ -21,27 +21,30 @@ common_event = StructType([
 
 
 def parse_json(line:str):
-    record_type = record['event_type']
+    record_type = line['event_type']
+    record = json.load(line)
     try:
         # [logic to parse records]
         if record_type == "T":
-    # [Get the applicable field values from json]
-        if:  # [some key fields empty]
-        event = common_event(col1_val, col2_val, ..., "T", "")
-        else:
-        event = common_event(,, , ....,, , , , "B", line)
-        return event
-    elif record_type == "Q":
-    # [Get the applicable field values from json]
-        if:  # [some key fields empty]:
-            event = common_event(col1_val, col2_val, …, "Q", "")
-        else:
-            event = common_event(,, , ....,, , , , "B", line)
-        return event
-    except Exception as e:
+            # [Get the applicable field values from json]
+            event = record
+            if record_type == "":  # [some key fields empty]
+                record['event type'] = "T"
+            else:
+                return event
+        elif record_type == "Q":
+            event = record
+            # [Get the applicable field values from json]
+            if record_type == "":  # [some key fields empty]:
+                record['event type'] = "Q"
+            else:
+                return event
+    except None:
+        event = record
         # [save record to dummy event in bad partition]
         # [fill in the fields as None or empty string]
-        return common_event(,, , ....,, , , , "B", line)
+        record['event type'] = "B"
+        return event
 
 
 def apply_latest(line):
