@@ -21,27 +21,35 @@ common_event = StructType([
 
 
 def parse_json(line:str):
-    record_type = record['event_type']
+    record_type = line['event_type']
+    record = json.load(line)
     try:
         # [logic to parse records]
         if record_type == "T":
-    # [Get the applicable field values from json]
-        if:  # [some key fields empty]
-        event = common_event(col1_val, col2_val, ..., "T", "")
-        else:
-        event = common_event(,, , ....,, , , , "B", line)
-        return event
-    elif record_type == "Q":
-    # [Get the applicable field values from json]
-        if:  # [some key fields empty]:
-            event = common_event(col1_val, col2_val, …, "Q", "")
-        else:
-            event = common_event(,, , ....,, , , , "B", line)
-        return event
-    except Exception as e:
+            # [Get the applicable field values from json]
+            event = record
+            if record_type == "":  # [some key fields empty]
+                record['event type'] = "T"
+            else:
+                return event
+        elif record_type == "Q":
+            event = record
+            # [Get the applicable field values from json]
+            if record_type == "":  # [some key fields empty]:
+                record['event type'] = "Q"
+            else:
+                return event
+    except None:
+        event = record
         # [save record to dummy event in bad partition]
         # [fill in the fields as None or empty string]
-        return common_event(,, , ....,, , , , "B", line)
+        record['event type'] = "B"
+        return event
+
+
+def apply_latest(line):
+    return line.groupBy()
+
 
 spark = SparkSession.builder.master('local').appName('app').getOrCreate()
 spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", config.access_token)
@@ -49,3 +57,8 @@ raw = spark.textFile("wasbs://blob-container@springboardstoragejt.blob.core.wind
 parsed = raw.map(lambda line: parse_json(line))
 data = spark.createDataFrame(parsed)
 data.write.partitionBy("partition").mode("overwrite").parquet("output_dir")
+trade_common = spark.read.parquet("output_dir/partition=T")
+trade = trade_common.select('trade_dt', 'symbol', 'exchange', 'event_tm', 'event_seq_nb', 'file_tm', 'trade_pr')
+trade_corrected = apply_latest(trade)
+trade_date = '2020-07-29'
+trade.write.parquet("data/json/2020-08-05/NYSE/trade/trade_dt={}".format(trade_date))
