@@ -43,9 +43,19 @@ def parse_json(line:str):
         # [fill in the fields as None or empty string]
         return common_event(,, , ....,, , , , "B", line)
 
+
+def apply_latest(line):
+    return line.groupBy()
+
+
 spark = SparkSession.builder.master('local').appName('app').getOrCreate()
 spark.conf.set("fs.azure.account.key.springboardstoragejt.blob.core.windows.net", config.access_token)
 raw = spark.textFile("wasbs://blob-container@springboardstoragejt.blob.core.windows.net/data")
 parsed = raw.map(lambda line: parse_json(line))
 data = spark.createDataFrame(parsed)
 data.write.partitionBy("partition").mode("overwrite").parquet("output_dir")
+trade_common = spark.read.parquet("output_dir/partition=T")
+trade = trade_common.select('trade_dt', 'symbol', 'exchange', 'event_tm', 'event_seq_nb', 'file_tm', 'trade_pr')
+trade_corrected = apply_latest(trade)
+trade_date = '2020-07-29'
+trade.write.parquet("data/json/2020-08-05/NYSE/trade/trade_dt={}".format(trade_date))

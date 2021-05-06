@@ -27,17 +27,24 @@ def parse_csv(line:str):
     try:
     # [logic to parse records]
         if record[record_type_pos] == "T":
-            event = common_event(col1_val, col2_val, ..., "T","")
-            #ask mento what is going on here??
+            event = [record[0], record[1], record[2], record[3],
+                     record[4], record[5], record[6], record[7], record[8],
+                     record[9], record[10]]
             return event
         elif record[record_type_pos] == "Q":
-            event = common_event(col1_val, col2_val, … , "Q","")
+            event = [record[0], record[1], record[2], record[3], record[4],
+                     record[5], record[6], record[7], record[8],
+                     record[9], record[10]]
             return event
-    except Exception as e:
-    # [save record to dummy event in bad partition]
-    # [fill in the fields as None or empty string]
-    return common_event(,,,....,,,,,"B", line)
+    except record[record_type_pos] == "":
+        event = [record[0], record[1], record[2], record[3],
+                 record[4], record[5], record[6], record[7], record[8],
+                 "B", record[10]]
+    return event
 
+
+def apply_latest(line):
+    return line.groupBy()
 
 
 spark = SparkSession.builder.master('local').appName('app').getOrCreate()
@@ -46,4 +53,10 @@ raw = spark.textFile("wasbs://blob-container@springboardstoragejt.blob.core.wind
 parsed = raw.map(lambda line: parse_csv(line))
 data = spark.createDataFrame(parsed)
 data.write.partitionBy("partition").mode("overwrite").parquet("output_dir")
+
+trade_common = spark.read.parquet("output_dir/partition=T")
+trade = trade_common.select('trade_dt', 'symbol', 'exchange', 'event_tm', 'event_seq_nb', 'file_tm', 'trade_pr')
+trade_corrected = apply_latest(trade)
+trade_date = '2020-07-29'
+trade.write.parquet("data/csv/2020-08-05/NYSE/trade/trade_dt={}".format(trade_date))
 
