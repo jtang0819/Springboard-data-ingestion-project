@@ -56,6 +56,7 @@ def apply_latest(line):
     return line.groupBy()
 
 
+# STEP TWO
 appName = 'Springboard data ingestion project'
 spark = SparkSession.builder.master('local').appName(appName).getOrCreate()
 raw = spark \
@@ -68,12 +69,15 @@ parsed = raw.map(lambda line: parse_csv(line))
 # print(parsed.head(10))
 data = spark.createDataFrame(parsed, common_event)
 data.write.partitionBy("partition").mode("overwrite").parquet("output_dir/data.parquet")
+# STEP THREE
 trade_common = spark.read.parquet("output_dir/data.parquet/partition=T/*")
 # print(trade_common.schema)
 trade = trade_common.select('trade_dt', 'symbol', 'exchange', 'event_tm', 'event_seq_nb', 'arrival_tm', 'trade_pr')
 trade_corrected = apply_latest(trade)
 trade_date = '2020-07-29'
 trade.write.parquet("output_dir/trade/trade_dt={}".format(trade_date))
+
+
 #
 #
 # df = spark.read.parquet('data/')
