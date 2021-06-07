@@ -3,3 +3,4 @@ config.py
 data.zip
 data
 analytical.py
+/csv_parser_jupyter_version.ipynb
