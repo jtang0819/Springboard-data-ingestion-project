@@ -136,6 +136,19 @@ quote_final = spark.sql(
 )
 quote_final.write.parquet('/quote-trade-analytical/date={}'.format(trade_date))
 
+
+def run_reporter_etl(my_config):
+    trade_date = my_config.get('production', 'processing_date')
+    reporter = Reporter(spark, my_config)
+    tracker = Tracker('analytical_etl', my_config)
+    try:
+        reporter.report(spark, trade_date, eod_dir)
+        tracker.update_job_status("success")
+    except Exception as e:
+        print(e)
+        tracker.update_job_status("failed")
+    return
+
 #
 #
 # df = spark.read.parquet('data/')
